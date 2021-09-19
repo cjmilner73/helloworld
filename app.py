@@ -72,13 +72,13 @@ def connect():
     """ Connect to the PostgreSQL database server """
     conn = None
     try:
-        # myPass = mysecret.get_secret()
-        # print(myPass["password"])
+        myPass = mysecret.get_secret()
+        # print(myPass[passw])
 
         # connect to the PostgreSQL server
         print('Connecting to the PostgreSQL database...')
-        conn = psycopg2.connect("host=trackerdb.cluster-cnylyxuhkuui.ap-southeast-1.rds.amazonaws.com dbname=postgres user=app_user password=oracle")
-        # conn = psycopg2.connect("host=localhost dbname=tracker user=app_user password=oracle")
+        conn = psycopg2.connect("host=trackerdb.cluster-cnylyxuhkuui.ap-southeast-1.rds.amazonaws.com dbname=postgres user=app_user password=${myPass}")
+        # conn = psycopg2.connect("host=localhost dbname=tracker user=app_user password=${myPass}")
 		
         # create a cursor
         cur = conn.cursor()
