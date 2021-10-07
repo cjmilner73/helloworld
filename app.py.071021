@@ -19,37 +19,11 @@ app = Chalice(app_name='helloworld')
 
 
 @app.route('/holdings')
-def get_holdings():
+def index():
     path = os.getcwd()
-    conn = connect()
-    cur = conn.cursor()
-    #cur = conn.cursor()
+    result = connect()
     # result = {'chris':'milner'}
-    cur.execute('SELECT * from holding')
-    result = cur.fetchall()
     return result
-
-@app.route('/prices')
-def get_prices():
-    url = 'bitcoin'
-    urlFull = 'https://api.coingecko.com/api/v3/simple/price?ids=' + url + '&vs_currencies=usd&include_24hr_change=true'
-    print(urlFull)
-    # r =requests.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin%2Cethereum&vs_currencies=usd')
-    r = requests.get(urlFull)
-    print(r.text)
-    return(r.json())
-
-@app.route('/update')
-def get_holdings():
-    path = os.getcwd()
-    conn = connect()
-    # result = {'chris':'milner'}
-    cur = conn.cursor()
-    sql = """INSERT INTO HOLDING VALUES ('solana','sol',100,100,100)"""
-    #cur.execute("insert into holding values ('solana','sol',100,100,100)")
-    cur.execute(sql)
-    conn.commit()
-    return "Insert"
 
 def get_secret():
 
@@ -137,8 +111,8 @@ def connect():
         # conn = psycopg2.connect("host=localhost dbname=tracker user=app_user password={myPass}")
 		
         # create a cursor
-        return(conn)
         cur = conn.cursor()
+        
 	# execute a statement
         print('PostgreSQL database version:')
         cur.execute('SELECT * from holding')
@@ -159,7 +133,7 @@ def connect():
         return(str(error))
     finally:
         if conn is not None:
-#            conn.close()
+            conn.close()
             print('Database connection closed.')
 
 # The view function above will return {"hello": "world"}
