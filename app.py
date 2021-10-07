@@ -103,7 +103,7 @@ def connect():
 
         # connect to the PostgreSQL server
         print('Connecting to the PostgreSQL database...')
-        connStr = f"host=database-1.cluster-cnylyxuhkuui.ap-southeast-1.rds.amazonaws.com dbname=postgres user=app_user password={myPass}"
+        connStr = f"host=database-2.cluster-cnylyxuhkuui.ap-southeast-1.rds.amazonaws.com dbname=postgres user=app_user password={myPass}"
         #connStr = f"host=trackerdb.cluster-cnylyxuhkuui.ap-southeast-1.rds.amazonaws.com dbname=postgres user=app_user password={myPass}"
         print("Connection String: " + connStr)
         conn = psycopg2.connect(connStr)
