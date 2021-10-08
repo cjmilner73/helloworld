@@ -2,3 +2,4 @@
 .chalice/venv/
 database.ini
 venv/
+chalice/

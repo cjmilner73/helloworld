@@ -17,6 +17,18 @@ from botocore.exceptions import ClientError
 
 app = Chalice(app_name='helloworld')
 
+@app.route('/dummy2')
+def dummy2():
+    return("dummy2")
+
+
+@app.route('/dummy')
+def dummy():
+    return("dummy")
+
+@app.route('/refresh')
+def refresh():
+    return("refresh")
 
 @app.route('/holdings')
 def get_holdings():
@@ -31,25 +43,47 @@ def get_holdings():
 
 @app.route('/prices')
 def get_prices():
-    url = 'bitcoin'
-    urlFull = 'https://api.coingecko.com/api/v3/simple/price?ids=' + url + '&vs_currencies=usd&include_24hr_change=true'
-    print(urlFull)
-    # r =requests.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin%2Cethereum&vs_currencies=usd')
-    r = requests.get(urlFull)
-    print(r.text)
-    return(r.json())
+    allHoldings = get_holdings()
+    for i in allHoldings:
+        token = i[0]
+        urlFull = 'https://api.coingecko.com/api/v3/simple/price?ids=' + token + '&vs_currencies=usd&include_24hr_change=true'
+        r = requests.get(urlFull)
+        tokenDict = r.json()
+        priceDict = tokenDict[token]
+        print(priceDict)
+        price = priceDict['usd']
+        day_change = priceDict['usd_24h_change']
+        update_price(token, price, day_change)
+    #return("Updated Prices")
+        
+
+#    token = 'bitcoin'
+#    urlFull = 'https://api.coingecko.com/api/v3/simple/price?ids=' + token + '&vs_currencies=usd&include_24hr_change=true'
+#    print(urlFull)
+#    # r =requests.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin%2Cethereum&vs_currencies=usd')
+#    r = requests.get(urlFull)
+#    tokenDict = r.json()
+#    priceDict = tokenDict[token]
+#    price = priceDict['usd']
+#    update_price(token, price)
+    #return(true)
 
 @app.route('/update')
-def get_holdings():
+def update_price(token, price, day_change):
     path = os.getcwd()
     conn = connect()
     # result = {'chris':'milner'}
     cur = conn.cursor()
-    sql = """INSERT INTO HOLDING VALUES ('solana','sol',100,100,100)"""
+    sql_update_query = """Update holding set last_price = %s where name = %s"""
+    cur.execute(sql_update_query, (price, token))
+    sql_update_query = """Update holding set day_change = %s where name = %s"""
+    cur.execute(sql_update_query, (day_change, token))
+#    sql = "INSERT INTO {} (name, last_price) VALUES ('{}',{})".format("holding", token, price)
+#    sql = """INSERT INTO HOLDING VALUES (token,'---',100,price,100)"""
     #cur.execute("insert into holding values ('solana','sol',100,100,100)")
-    cur.execute(sql)
+    #cur.execute(sql)
     conn.commit()
-    return "Insert"
+    #return "Insert"
 
 def get_secret():
 

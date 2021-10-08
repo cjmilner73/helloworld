@@ -1,4 +1,4 @@
-#!/Users/chrismilner/BluemoonConsulting/Projects/venvs/helloworld/venv/bin/python3
+#!/Users/chrismilner/Bluemoon_Consulting/Projects/chalice/helloworld/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
