@@ -22,14 +22,6 @@ def dummy2():
     return("dummy2")
 
 
-@app.route('/dummy')
-def dummy():
-    return("dummy")
-
-@app.route('/refresh')
-def refresh():
-    return("refresh")
-
 @app.route('/holdings')
 def get_holdings():
     path = os.getcwd()
@@ -40,6 +32,22 @@ def get_holdings():
     cur.execute('SELECT * from holding')
     result = cur.fetchall()
     return result
+
+@app.route('/ohlc')
+def get_prices():
+    allHoldings = get_holdings()
+    for i in allHoldings:
+        token = i[0]
+        print(token)
+        urlFull = 'https://api.coingecko.com/api/v3/coins/' + token + '/ohlc?vs_currency=usd&days=90'
+        r = requests.get(urlFull)
+        ohlcDict = r.json()
+        print(ohlcDict)
+#        priceDict = tokenDict[token]
+#        print(priceDict)
+#        price = priceDict['usd']
+#        day_change = priceDict['usd_24h_change']
+#        update_price(token, price, day_change)
 
 @app.route('/prices')
 def get_prices():
