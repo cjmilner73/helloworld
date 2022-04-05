@@ -19,18 +19,19 @@ app = Chalice(app_name='helloworld')
 
 @app.route('/dummy2')
 def dummy2():
-    return("dummy2")
+    return("dummy")
 
 
 @app.route('/holdings')
 def get_holdings():
+    print("Entering get_holdings()")
     path = os.getcwd()
     conn = connect()
     cur = conn.cursor()
-    #cur = conn.cursor()
-    # result = {'chris':'milner'}
+    #result = {'chris':'milner'}
     cur.execute('SELECT * from holding')
     result = cur.fetchall()
+    print(result)
     return result
 
 @app.route('/ohlc')
@@ -51,17 +52,26 @@ def get_prices():
 
 @app.route('/prices')
 def get_prices():
+    print("Entering get_prices()")
     allHoldings = get_holdings()
     for i in allHoldings:
+        print(i)
         token = i[0]
         urlFull = 'https://api.coingecko.com/api/v3/simple/price?ids=' + token + '&vs_currencies=usd&include_24hr_change=true'
+        print(urlFull)
         r = requests.get(urlFull)
+        print("Did we get here?")
         tokenDict = r.json()
+        print(urlFull)
         priceDict = tokenDict[token]
         print(priceDict)
         price = priceDict['usd']
         day_change = priceDict['usd_24h_change']
+        print(token)
+        print(price)
+        print(day_change)
         update_price(token, price, day_change)
+        print("Updated prices");
     #return("Updated Prices")
         
 
@@ -78,6 +88,7 @@ def get_prices():
 
 @app.route('/update')
 def update_price(token, price, day_change):
+    print("Entering update_price()")
     path = os.getcwd()
     conn = connect()
     # result = {'chris':'milner'}
@@ -86,8 +97,7 @@ def update_price(token, price, day_change):
     cur.execute(sql_update_query, (price, token))
     sql_update_query = """Update holding set day_change = %s where name = %s"""
     cur.execute(sql_update_query, (day_change, token))
-#    sql = "INSERT INTO {} (name, last_price) VALUES ('{}',{})".format("holding", token, price)
-#    sql = """INSERT INTO HOLDING VALUES (token,'---',100,price,100)"""
+    #sql = "INSERT INTO {} (name, last_price) VALUES ('{}',{})".format("holding", token, price)
     #cur.execute("insert into holding values ('solana','sol',100,100,100)")
     #cur.execute(sql)
     conn.commit()
@@ -95,10 +105,12 @@ def update_price(token, price, day_change):
 
 def get_secret():
 
+    print("Entering get_secret()")
 #    secret_name = "tracker_db_secret"
     secret_name = "database"
+    #secret_name = "database-serverless"
     region_name = "ap-southeast-1"
-
+    #secret_name = "arn:aws:secretsmanager:ap-southeast-1:869696343558:secret:database-serverless-Kq00lE"
     # Create a Secrets Manager client
     session = boto3.session.Session()
     client = session.client(
@@ -109,14 +121,11 @@ def get_secret():
     # In this sample we only handle the specific exceptions for the 'GetSecretValue' API.
     # See https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
     # We rethrow the exception by default.
-    print("SM client...")
     print(client)
     try:
-        print("Trying client.get_secret_value")
         get_secret_value_response = client.get_secret_value(
             SecretId=secret_name
         )
-        print("Got client.get_secret_value")
     except ClientError as e:
         print("Response e.response:")
         print(e.response)
@@ -148,11 +157,8 @@ def get_secret():
     else:
         # Decrypts secret using the associated KMS CMK.
         # Depending on whether the secret is a string or binary, one of these fields will be populated.
-        print("Should be returning Secret now")
         if 'SecretString' in get_secret_value_response:
             secret = get_secret_value_response['SecretString']
-        #    print("Secret is" + secret)
-            print(type(secret))
             return json.loads(secret)
         else:
             decoded_binary_secret = base64.b64decode(get_secret_value_response['SecretBinary'])
@@ -164,17 +170,19 @@ def connect():
     """ Connect to the PostgreSQL database server """
     conn = None
     try:
-        print("Calling get_secret()")
+        print("Entering connect())")
         mySecStr = get_secret()
-        print("mySecStr password is: " + mySecStr["password"])
+        #print("mySecStr password is: " + mySecStr["password"])
         myPass = mySecStr["password"]
 
         # connect to the PostgreSQL server
         print('Connecting to the PostgreSQL database...')
-        connStr = f"host=database-2-cluster.cluster-cnylyxuhkuui.ap-southeast-1.rds.amazonaws.com dbname=postgres user=app_user password={myPass}"
+        connStr = f"host=trackdb-cluster.cluster-cnylyxuhkuui.ap-southeast-1.rds.amazonaws.com dbname=trackdb user=sysadmin password={myPass}"
+        #connStr = f"host=database-2-cluster.cluster-cnylyxuhkuui.ap-southeast-1.rds.amazonaws.com dbname=postgres user=app_user password={myPass}"
+        #connStr = f"host=tracker.cluster-cnylyxuhkuui.ap-southeast-1.rds.amazonaws.com dbname=trackdb user=sysadmin password={myPass}"
         #connStr = f"host=database-2.cluster-cnylyxuhkuui.ap-southeast-1.rds.amazonaws.com dbname=postgres user=app_user password={myPass}"
         #connStr = f"host=trackerdb.cluster-cnylyxuhkuui.ap-southeast-1.rds.amazonaws.com dbname=postgres user=app_user password={myPass}"
-        print("Connection String: " + connStr)
+        # print("Connection String: " + connStr)
         conn = psycopg2.connect(connStr)
         # conn = psycopg2.connect("host=localhost dbname=tracker user=app_user password={myPass}")
 		
